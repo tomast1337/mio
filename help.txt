@@ -1,0 +1,15 @@
+Usage:
+
+$help . . . . . . . . . display this help.
+$video <link> . . . . . downloads and sends video from YouTube.
+$playlist <link> . . .  downloads and sends entire playlist from YouTube.
+$learn ip . . . . . . . learn about why intelectual property don't really exists.
+$learn fsf . . . . . .  learn about the Free Software Foundation.
+$license . . . . . . .  sends a copy of the GNU General Public License v3.
+$source . . . . . . . . sends instructions to download the source of Mio Akiyama.
+
+Mio Akiyama is licensed under the GNU GPLv3 and the source is avaiable at https://www.github.com/gioiacyberpunk/mio. If you want to contribute to it's development don't hesitate on sending a pull request. If you have any problem, you may want to check the issues or start another one.
+
+This program comes with absolutely no warranty. See the GNU GPLv3 at https://www.gnu.org/licenses/gpl-3.0.html or the copy at the online repository of Mio Akiyama source for details.
+
+This implementation of Mio Akiyama is mainteined by gioiacyberpunk#8222.
