@@ -1,7 +1,7 @@
 Usage:
 
 $help . . . . . . . . . display this help.
-$video <link> . . . . . downloads and sends video from YouTube.
+$video <links> . . . . . downloads and sends video from YouTube. Accepts more than one link (space separated)
 $playlist <link> . . .  downloads and sends entire playlist from YouTube.
 $learn ip . . . . . . . learn about why intelectual property don't really exists.
 $learn fsf . . . . . .  learn about the Free Software Foundation.
