@@ -1,2 +1,2 @@
 discord
-pytube
+yt-dlp
