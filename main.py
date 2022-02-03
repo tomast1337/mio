@@ -1,8 +1,8 @@
-from calendar import c
 from discord import *
 from discord.ext import commands
 import os
 import shutil
+import re
 
 client = commands.Bot(command_prefix='$')
 client.remove_command('help')
@@ -13,9 +13,14 @@ help_file = open("help.txt", "r")
 help_content = help_file.read()
 
 
+def test_youtube_url(url: str):
+    return re.match(r'^https?://(?:www\.)?(?:youtube\.com/watch\?v=|youtu\.be/)([\w-]{10,12})', url)
+
+
 @client.event
 async def on_ready():
     print(f"logged in as {client.user}")
+
 
 @client.command()
 async def play(ctx, url: str):
@@ -27,11 +32,14 @@ async def play(ctx, url: str):
         await ctx.send("Wait for the current playing music to end or use the 'stop' command")
         return
 
+    # if the url is not a youtube url or if it is a playlist
+    if not test_youtube_url(url) or "playlist" in url:
+        await ctx.send("Your url inst valid")
+        return
+
     voiceChannel = utils.get(ctx.guild.voice_channels, name='General')
     await voiceChannel.connect()
     voice = utils.get(client.voice_clients, guild=ctx.guild)
-
-
 
     os.system(f"yt-dlp -x --audio-format mp3 {url}")
 
@@ -51,14 +59,8 @@ async def leave(ctx):
 
 
 @client.command()
-async def stop(ctx):
-    voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
-    voice.stop()
-
-
-@client.command()
 async def pause(ctx):
-    voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
+    voice = utils.get(client.voice_clients, guild=ctx.guild)
     if voice.is_playing():
         voice.pause()
     else:
@@ -67,7 +69,7 @@ async def pause(ctx):
 
 @client.command()
 async def resume(ctx):
-    voice = discord.utils.get(client.voice_clients, guild=ctx.guild)
+    voice = utils.get(client.voice_clients, guild=ctx.guild)
     if voice.is_paused():
         voice.resume()
     else:
@@ -91,7 +93,7 @@ async def source(ctx):
 
 
 @client.command()
-async def video(ctx, url: str):
+async def video(ctx, *args):
     await ctx.send("Downloading videos, please wait...")
 
     channel = ctx.channel
@@ -109,14 +111,15 @@ async def video(ctx, url: str):
         }],
     }
 
-    links = url
     # Downloading video using yt-dlp
-    os.system(
-        f"yt-dlp -x --audio-format mp3 -o '{str(channel.id)}/%(title)s.%(ext)s' {url}")
+    for arg in args:
+        if test_youtube_url(arg):
+            os.system(
+                f"yt-dlp -x --audio-format mp3 -o '{str(channel.id)}/%(title)s.%(ext)s' {arg}")
 
     await ctx.send("Done downloading.")
 
-    # After downloading, send the file to the channel
+    # After downloading, send the file(s) to the channel
     for file in os.listdir(str(channel.id)):
         if file.endswith(".mp3"):
             await ctx.send(file=File(f"{str(channel.id)}/{file}"))
