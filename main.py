@@ -1,10 +1,11 @@
+from calendar import c
 from discord import *
-from pytube import *
+from discord.ext import commands
 import os
 import shutil
-import sys
 
-client = Client()
+client = commands.Bot(command_prefix='$')
+client.remove_command('help')
 
 auth_file = open("auth.txt", "r")
 
@@ -13,51 +14,72 @@ help_content = help_file.read()
 
 @client.event
 async def on_ready():
-    print("logged in as {0.user}".format(client))
+    print(f"logged in as {client.user}")
 
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
+@client.command()
+async def play(ctx, url:str,channel:str):
+    pass
 
-    # HELP, LICENSE AND SOURCE {{{
-    if message.content.startswith("$help"):
-        await message.channel.send("Hello, I'm Mio Akiyama, I'll help you download and listen to music.")
-        await message.channel.send(help_content)
+@client.command()
+async def quit(ctx):
+    pass
 
-    elif message.content.startswith("$license"):
-        await message.channel.send(content="GNU General Public License, third version.", file=File("LICENSE"))
+@client.command()
+async def stop(ctx):
+    pass
 
-    elif message.content.startswith("$source"):
-        await message.channel.send("If you have git installed, you can do 'git clone https://github.com/gioiacyberpunk/mio' to download the source code.\nIf not, go to that url, click on 'Code' green button and 'Download ZIP'. Unzip the downloaded file to any location.")
+@client.command()
+async def pause(ctx):
+    pass
 
-    # }}}
+@client.command()
+async def resume(ctx):
+    pass
 
-    # MAIN BOT FUNCTIONS {{{
+@client.command()
+async def help(ctx):
+    await ctx.send("Hello, I'm Mio Akiyama, I'll help you download and listen to music.")
+    await ctx.send(help_content)
 
-    elif message.content.startswith("$video"):
+@client.command()
+async def license(ctx):
+    await ctx.send("GNU General Public License, third version.", file = File("LICENSE"))
 
-        await message.channel.send("Downloading videos, please wait...")
+@client.command()
+async def source(ctx):
+    await ctx.send("If you have git installed, you can do 'git clone https://github.com/gioiacyberpunk/mio' to download the source code.\nIf not, go to that url, click on 'Code' green button and 'Download ZIP'. Unzip the downloaded file to any location.")
 
-        channel_id = str(message.channel.id)
-        try:
-            os.mkdir(channel_id)
-        except FileExistsError:
-            print()
+@client.command()
+async def video(ctx,url:str):
+    await ctx.send("Downloading videos, please wait...")
 
-        spl_message = message.content.split()
-        links = spl_message[1:]
+    channel = ctx.channel
+    try:
+        os.mkdir(str(channel.id))
+    except FileExistsError:
+        print()
 
-        for link in links:
-            
-            # this is ugly but it's the only way to do it
-            await message.channel.send(file=File(YouTube(link).streams.filter(only_audio=True).first().download(channel_id)))
+    ydl_opts = {
+            'format': 'bestaudio/best',
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',
+            }],
+        }
+        
+    links = url
+    #Downloading video using yt-dlp
+    os.system(f"yt-dlp -x --audio-format mp3 -o '{str(channel.id)}/%(title)s.%(ext)s' {url}")
 
-        shutil.rmtree(channel_id)
+    await ctx.send("Done downloading.")
 
-    # }}}
-
+    #After downloading, send the file to the channel
+    for  file in os.listdir(str(channel.id)):
+        if file.endswith(".mp3"):
+            await ctx.send(file=File(f"{str(channel.id)}/{file}"))
+    shutil.rmtree(str(channel.id))
 
 client.run(auth_file.read())
 help_file.close()
